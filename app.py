@@ -162,13 +162,14 @@ if uploaded_file is not None:
         if st.button("Generate AI Analysis"):
             try:
                 prompt = (
-                    "Analyze the following dataset and provide key insights: \n"
-                    + data.head(10).to_csv(index=False)
+                    "Analyze the following dataset with a focus on the global port performance and its impact on Pelindo Indonesia's competitiveness. "
+                    "Provide insights on trade flows, TEUs data, key challenges, and opportunities: \n"
+                    + data.to_csv(index=False)
                 )
 
                 response = openai.ChatCompletion.create(
-                    model="gpt-4o",
-                    messages=[{"role": "system", "content": "You are a data analyst."},
+                    model="gpt-4",
+                    messages=[{"role": "system", "content": "You are an expert data analyst specializing in port and logistics performance."},
                               {"role": "user", "content": prompt}]
                 )
                 st.write("#### AI Analysis Result:")
