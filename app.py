@@ -13,7 +13,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Streamlit App
-st.title("Data Visualisation and Analytics with AI")
+st.title(" Pelindo AI Business Analytics")
 
 # File upload
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
