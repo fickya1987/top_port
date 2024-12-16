@@ -168,7 +168,7 @@ if uploaded_file is not None:
                 )
 
                 response = openai.ChatCompletion.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[{"role": "system", "content": "Anda adalah seorang analis data ahli dalam performa pelabuhan dan logistik."},
                               {"role": "user", "content": prompt}]
                 )
