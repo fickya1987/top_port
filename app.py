@@ -54,6 +54,7 @@ if uploaded_file is not None:
             st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
 
         # Visualisation options
+        
         st.write("### Visualisation")
         columns = data.columns.tolist()
         x_axis = st.selectbox("Select X-axis", columns)
@@ -88,11 +89,16 @@ if uploaded_file is not None:
                 else:
                     st.error("Heatmap requires at least two numerical columns.")
 
+            # Enhanced readability for long labels
             ax.set_xlabel(x_axis)
             ax.set_ylabel(y_axis)
-            plt.xticks(rotation=45, ha='right', fontsize=8, wrap=True)
-            plt.yticks(fontsize=8)
+            ax.set_xticklabels(
+                [textwrap.fill(label, 10) for label in data[x_axis]],  # Wrap labels to max 10 characters per line
+                rotation=45, ha='right', fontsize=10
+            )
+            plt.yticks(fontsize=10)
             st.pyplot(fig)
+
 
         # AI Analysis Options
         st.write("### AI Data Analysis")
@@ -107,7 +113,7 @@ if uploaded_file is not None:
                     )
                 else:
                     prompt = (
-                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya."
+                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya beserta url link kalau tersedia."
                     )
 
                 response = openai.ChatCompletion.create(
