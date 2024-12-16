@@ -27,75 +27,13 @@ if uploaded_file is not None:
         elif uploaded_file.name.endswith(".xlsx"):
             data = pd.read_excel(uploaded_file)
 
-        # Adding latitude and longitude for specific ports if missing
-        coordinates = {
-            "Shanghai": {"latitude": 31.2304, "longitude": 121.4737},
-            "Singapore": {"latitude": 1.3521, "longitude": 103.8198},
-            "Ningbo-Zhoushan": {"latitude": 29.8683, "longitude": 121.5440},
-            "Shenzhen": {"latitude": 22.5431, "longitude": 114.0579},
-            "Guangzhou Harbor": {"latitude": 23.1291, "longitude": 113.2644},
-            "Busan": {"latitude": 35.1796, "longitude": 129.0756},
-            "Qingdao": {"latitude": 36.0662, "longitude": 120.3826},
-            "Hong Kong": {"latitude": 22.3193, "longitude": 114.1694},
-            "Tianjin": {"latitude": 39.1252, "longitude": 117.1994},
-            "Rotterdam": {"latitude": 51.9225, "longitude": 4.4792},
-            "Jebel Ali": {"latitude": 25.0657, "longitude": 55.1172},
-            "Port Klang": {"latitude": 3.0083, "longitude": 101.3923},
-            "Xiamen": {"latitude": 24.4798, "longitude": 118.0894},
-            "Antwerp": {"latitude": 51.2213, "longitude": 4.4051},
-            "Kaohsiung": {"latitude": 22.6273, "longitude": 120.3014},
-            "Dalian": {"latitude": 38.9140, "longitude": 121.6147},
-            "Los Angeles": {"latitude": 34.0522, "longitude": -118.2437},
-            "Hamburg": {"latitude": 53.5511, "longitude": 9.9937},
-            "Tanjung Pelepas": {"latitude": 1.3620, "longitude": 103.5376},
-            "Laem Chabang": {"latitude": 13.0865, "longitude": 100.8972},
-            "Keihin Ports": {"latitude": 35.6590, "longitude": 139.7016},
-            "Long Beach": {"latitude": 33.7701, "longitude": -118.1937},
-            "Tanjung Priok": {"latitude": -6.1176, "longitude": 106.9083},
-            "New York-New Jersey": {"latitude": 40.7128, "longitude": -74.0060},
-            "Colombo": {"latitude": 6.9271, "longitude": 79.8612},
-            "Ho Chi Minh City": {"latitude": 10.7769, "longitude": 106.7009},
-            "Suzhou": {"latitude": 31.2989, "longitude": 120.5853},
-            "Piraeus": {"latitude": 37.9475, "longitude": 23.6371},
-            "Yingkou": {"latitude": 40.6656, "longitude": 122.2356},
-            "Valencia": {"latitude": 39.4699, "longitude": -0.3763},
-            "Manila": {"latitude": 14.5995, "longitude": 120.9842},
-            "Taicang": {"latitude": 31.4500, "longitude": 121.1000},
-            "Hai Phong": {"latitude": 20.8652, "longitude": 106.6839},
-            "Algeciras": {"latitude": 36.1408, "longitude": -5.4562},
-            "Jawaharlal Nehru Port (Nhava Sheva)": {"latitude": 18.9476, "longitude": 72.9355},
-            "Bremen/Bremerhaven": {"latitude": 53.0793, "longitude": 8.8017},
-            "Tanger Med": {"latitude": 35.8844, "longitude": -5.4942},
-            "Lianyungang": {"latitude": 34.6000, "longitude": 119.1667},
-            "Mundra": {"latitude": 22.8396, "longitude": 69.7051},
-            "Savannah": {"latitude": 32.0835, "longitude": -81.0998},
-            "Tokyo": {"latitude": 35.6828, "longitude": 139.7595},
-            "Rizhao": {"latitude": 35.4000, "longitude": 119.5500},
-            "Foshan": {"latitude": 23.0215, "longitude": 113.1214},
-            "Jeddah": {"latitude": 21.4858, "longitude": 39.1925},
-            "Colon": {"latitude": 9.3598, "longitude": -79.9000},
-            "Santos": {"latitude": -23.9545, "longitude": -46.3336},
-            "Salalah": {"latitude": 17.0197, "longitude": 54.0897},
-            "Dongguan": {"latitude": 23.0207, "longitude": 113.7518},
-            "Guangxi Beibu": {"latitude": 21.6146, "longitude": 108.3225},
-            "Cai Mep": {"latitude": 10.5028, "longitude": 107.0333},
-            "Port Said": {"latitude": 31.2653, "longitude": 32.3019},
-            "Qinzhou": {"latitude": 21.9500, "longitude": 108.6167},
-            "NW Seaport Alliance": {"latitude": 47.6062, "longitude": -122.3321},
-            "Felixstowe": {"latitude": 51.9629, "longitude": 1.3511},
-            "Marsaxlokk": {"latitude": 35.8410, "longitude": 14.5438},
-            "Nanjing": {"latitude": 32.0603, "longitude": 118.7969},
-            "Fuzhou": {"latitude": 26.0745, "longitude": 119.2966},
-            "Barcelona": {"latitude": 41.3851, "longitude": 2.1734},
-            "Vancouver": {"latitude": 49.2827, "longitude": -123.1207},
-        }
-
-        if "latitude" not in data.columns or "longitude" not in data.columns:
-            data["latitude"] = data["Port Name"].map(lambda x: coordinates.get(x, {}).get("latitude"))
-            data["longitude"] = data["Port Name"].map(lambda x: coordinates.get(x, {}).get("longitude"))
-
-        st.write("### Data Preview")
-        st.dataframe(data.head())
+        # Search Engine Feature
+        st.write("### Search Port or Country")
+        search_query = st.text_input("Search for a port or country:")
+        if search_query:
+            filtered_data = data[data.apply(lambda row: search_query.lower() in str(row).lower(), axis=1)]
+            st.write("#### Search Results:")
+            st.dataframe(filtered_data)
 
         # Geomap Visualisation
         st.write("### Geomap Visualisation")
@@ -113,10 +51,6 @@ if uploaded_file is not None:
             st_folium(m, width=700, height=500)
         else:
             st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
-
-        # Summary statistics
-        st.write("### Summary Statistics")
-        st.write(data.describe())
 
         # Visualisation options
         st.write("### Visualisation")
@@ -155,25 +89,34 @@ if uploaded_file is not None:
 
             ax.set_xlabel(x_axis)
             ax.set_ylabel(y_axis)
+            plt.xticks(rotation=45)
+            plt.yticks(rotation=45)
             st.pyplot(fig)
 
-        # AI Analysis
+        # AI Analysis with Source Reference
         st.write("### AI Data Analysis")
-        if st.button("Generate AI Analysis"):
+        analysis_query = st.text_area("Describe the analysis you need (e.g., detail comparison, trends, etc.):")
+        if st.button("Generate AI Analysis") and analysis_query:
             try:
                 prompt = (
-                    "Analisis dataset berikut dengan fokus pada kinerja pelabuhan dunia dan dampaknya terhadap daya saing Pelindo Indonesia. "
-                    "Berikan wawasan mendalam mengenai arus perdagangan, data TEUs, tantangan utama, dan peluang yang ada: \n"
+                    f"Berdasarkan dataset berikut, lakukan analisis mendalam tentang '{analysis_query}'. Fokuskan analisis pada kinerja pelabuhan, tren TEUs, dan peluang untuk Pelindo Indonesia. Berikan kesimpulan yang jelas dan sertakan sumber referensi yang mendukung:\n"
                     + data.to_csv(index=False)
                 )
 
                 response = openai.ChatCompletion.create(
                     model="gpt-4o",
-                    messages=[{"role": "system", "content": "Anda adalah seorang analis data ahli dalam performa pelabuhan dan logistik."},
+                    max_completion_tokens=2048,
+                    messages=[{"role": "system", "content": "Anda adalah analis data berpengalaman."},
                               {"role": "user", "content": prompt}]
                 )
+                result = response['choices'][0]['message']['content']
                 st.write("#### Hasil Analisis AI:")
-                st.write(response['choices'][0]['message']['content'])
+                st.write(result)
+
+                # Display tables or charts if mentioned in response
+                if "grafik" in analysis_query.lower() or "tabel" in analysis_query.lower():
+                    st.write("### Grafik atau Tabel tambahan akan dikembangkan di sini.")
+                    st.dataframe(data)
 
             except Exception as e:
                 st.error(f"Error generating analysis: {e}")
@@ -183,4 +126,5 @@ if uploaded_file is not None:
 
 else:
     st.info("Please upload a file to proceed.")
+
 
