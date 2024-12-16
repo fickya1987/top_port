@@ -76,7 +76,7 @@ if uploaded_file is not None:
 
         # AI Analysis Options
         st.write("### AI Data Analysis")
-        analysis_type = st.radio("Pilih jenis analisis:", ["Analisis Berdasarkan Data", "Pencarian Detail GPT-4o"])
+        analysis_type = st.radio("Pilih jenis analisis:", ["Analisis Berdasarkan Data dari Pelindo", "Pencarian Detail dengan Pelindo AI"])
         analysis_query = st.text_area("Deskripsi analisis atau detail pencarian:")
         if st.button("Generate AI Analysis") and analysis_query:
             try:
