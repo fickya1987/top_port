@@ -7,3 +7,4 @@ geopandas
 folium
 streamlit-folium
 seaborn
+plotly
