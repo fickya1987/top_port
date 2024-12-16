@@ -5,6 +5,7 @@ import seaborn as sns
 import openai
 from dotenv import load_dotenv
 import os
+import textwrap
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
@@ -89,34 +90,36 @@ if uploaded_file is not None:
 
             ax.set_xlabel(x_axis)
             ax.set_ylabel(y_axis)
-            plt.xticks(rotation=45)
-            plt.yticks(rotation=45)
+            plt.xticks(rotation=45, ha='right', fontsize=8, wrap=True)
+            plt.yticks(fontsize=8)
             st.pyplot(fig)
 
-        # AI Analysis with Source Reference
+        # AI Analysis Options
         st.write("### AI Data Analysis")
-        analysis_query = st.text_area("Describe the analysis you need (e.g., detail comparison, trends, etc.):")
+        analysis_type = st.radio("Pilih jenis analisis:", ["Analisis Berdasarkan Data", "Pencarian Detail GPT-4o"])
+        analysis_query = st.text_area("Deskripsi analisis atau detail pencarian:")
         if st.button("Generate AI Analysis") and analysis_query:
             try:
-                prompt = (
-                    f"Berdasarkan dataset berikut, lakukan analisis mendalam tentang '{analysis_query}'. Fokuskan analisis pada kinerja pelabuhan, tren TEUs, dan peluang untuk Pelindo Indonesia. Berikan kesimpulan yang jelas dan sertakan sumber referensi yang mendukung:\n"
-                    + data.to_csv(index=False)
-                )
+                if analysis_type == "Analisis Berdasarkan Data":
+                    prompt = (
+                        f"Berdasarkan dataset berikut, lakukan analisis mendalam tentang '{analysis_query}'. Fokuskan analisis pada kinerja pelabuhan, tren TEUs, dan peluang untuk Pelindo Indonesia:\n"
+                        + data.to_csv(index=False)
+                    )
+                else:
+                    prompt = (
+                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya."
+                    )
 
                 response = openai.ChatCompletion.create(
                     model="gpt-4o",
                     max_completion_tokens=2048,
+                    temperature=1,
                     messages=[{"role": "system", "content": "Anda adalah analis data berpengalaman."},
                               {"role": "user", "content": prompt}]
                 )
                 result = response['choices'][0]['message']['content']
                 st.write("#### Hasil Analisis AI:")
                 st.write(result)
-
-                # Display tables or charts if mentioned in response
-                if "grafik" in analysis_query.lower() or "tabel" in analysis_query.lower():
-                    st.write("### Grafik atau Tabel tambahan akan dikembangkan di sini.")
-                    st.dataframe(data)
 
             except Exception as e:
                 st.error(f"Error generating analysis: {e}")
