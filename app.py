@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.express as px
 import openai
 from dotenv import load_dotenv
 import os
-import textwrap
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
@@ -40,65 +38,41 @@ if uploaded_file is not None:
         st.write("### Geomap Visualisation")
         if "latitude" in data.columns and "longitude" in data.columns:
             map_center = [data["latitude"].mean(), data["longitude"].mean()]
-            m = folium.Map(location=map_center, zoom_start=5)
+            m = folium.Map(location=map_center, zoom_start=2)
 
             for _, row in data.iterrows():
                 folium.Marker(
                     location=[row["latitude"], row["longitude"]],
-                    popup=f"Port: {row['Port Name']}<br>Country: {row['Country']}<br>TEUs: {row['MillionTEU2023']}M",
+                    popup=f"<b>Port:</b> {row['Port Name']}<br><b>Country:</b> {row['Country']}<br><b>TEUs:</b> {row['MillionTEU2023']}M",
+                    icon=folium.Icon(color='blue', icon='info-sign')
                 ).add_to(m)
 
             st.write("#### Geomap")
-            st_folium(m, width=700, height=500)
+            st_folium(m, width=800, height=500)
         else:
             st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
 
-        # Visualisation options
-        
-        st.write("### Visualisation")
+        # Interactive Visualisation with Plotly
+        st.write("### Interactive Visualisation")
         columns = data.columns.tolist()
         x_axis = st.selectbox("Select X-axis", columns)
         y_axis = st.selectbox("Select Y-axis", columns)
         chart_type = st.selectbox(
             "Select Chart Type", 
-            ["Line Chart", "Bar Chart", "Scatter Plot", "Histogram", "Box Plot", "Heatmap"]
+            ["Line Chart", "Bar Chart", "Scatter Plot", "Histogram"]
         )
 
-        if st.button("Generate Plot"):
-            fig, ax = plt.subplots()
-
+        if st.button("Generate Interactive Plot"):
             if chart_type == "Line Chart":
-                ax.plot(data[x_axis], data[y_axis], marker='o')
-                ax.set_title(f"{y_axis} vs {x_axis}")
+                fig = px.line(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
             elif chart_type == "Bar Chart":
-                ax.bar(data[x_axis], data[y_axis])
-                ax.set_title(f"{y_axis} vs {x_axis}")
+                fig = px.bar(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
             elif chart_type == "Scatter Plot":
-                ax.scatter(data[x_axis], data[y_axis])
-                ax.set_title(f"{y_axis} vs {x_axis}")
+                fig = px.scatter(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
             elif chart_type == "Histogram":
-                ax.hist(data[y_axis], bins=20)
-                ax.set_title(f"Histogram of {y_axis}")
-            elif chart_type == "Box Plot":
-                sns.boxplot(x=data[x_axis], y=data[y_axis], ax=ax)
-                ax.set_title(f"Box Plot of {y_axis} by {x_axis}")
-            elif chart_type == "Heatmap":
-                if data.select_dtypes(include=["number"]).shape[1] > 1:
-                    sns.heatmap(data.corr(), annot=True, cmap="coolwarm", ax=ax)
-                    ax.set_title("Correlation Heatmap")
-                else:
-                    st.error("Heatmap requires at least two numerical columns.")
+                fig = px.histogram(data, x=x_axis, title=f"Histogram of {x_axis}")
 
-            # Enhanced readability for long labels
-            ax.set_xlabel(x_axis)
-            ax.set_ylabel(y_axis)
-            ax.set_xticklabels(
-                [textwrap.fill(label, 10) for label in data[x_axis]],  # Wrap labels to max 10 characters per line
-                rotation=45, ha='right', fontsize=10
-            )
-            plt.yticks(fontsize=10)
-            st.pyplot(fig)
-
+            st.plotly_chart(fig)
 
         # AI Analysis Options
         st.write("### AI Data Analysis")
@@ -113,13 +87,13 @@ if uploaded_file is not None:
                     )
                 else:
                     prompt = (
-                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya beserta url link kalau tersedia."
+                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya."
                     )
 
                 response = openai.ChatCompletion.create(
                     model="gpt-4o",
-                    max_completion_tokens=2048,
                     temperature=1,
+                    max_completion_tokens=2048,
                     messages=[{"role": "system", "content": "Anda adalah analis data berpengalaman."},
                               {"role": "user", "content": prompt}]
                 )
@@ -135,5 +109,6 @@ if uploaded_file is not None:
 
 else:
     st.info("Please upload a file to proceed.")
+
 
 
