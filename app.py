@@ -97,6 +97,23 @@ if uploaded_file is not None:
         st.write("### Data Preview")
         st.dataframe(data.head())
 
+        # Geomap Visualisation
+        st.write("### Geomap Visualisation")
+        if "latitude" in data.columns and "longitude" in data.columns:
+            map_center = [data["latitude"].mean(), data["longitude"].mean()]
+            m = folium.Map(location=map_center, zoom_start=5)
+
+            for _, row in data.iterrows():
+                folium.Marker(
+                    location=[row["latitude"], row["longitude"]],
+                    popup=f"Port: {row['Port Name']}<br>Country: {row['Country']}<br>TEUs: {row['MillionTEU2023']}M",
+                ).add_to(m)
+
+            st.write("#### Geomap")
+            st_folium(m, width=700, height=500)
+        else:
+            st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
+
         # Summary statistics
         st.write("### Summary Statistics")
         st.write(data.describe())
@@ -140,39 +157,22 @@ if uploaded_file is not None:
             ax.set_ylabel(y_axis)
             st.pyplot(fig)
 
-        # Geomap Visualisation
-        st.write("### Geomap Visualisation")
-        if "latitude" in data.columns and "longitude" in data.columns:
-            map_center = [data["latitude"].mean(), data["longitude"].mean()]
-            m = folium.Map(location=map_center, zoom_start=5)
-
-            for _, row in data.iterrows():
-                folium.Marker(
-                    location=[row["latitude"], row["longitude"]],
-                    popup=f"Port: {row['Port Name']}<br>Country: {row['Country']}<br>TEUs: {row['MillionTEU2023']}M",
-                ).add_to(m)
-
-            st.write("#### Geomap")
-            st_folium(m, width=700, height=500)
-        else:
-            st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
-
         # AI Analysis
         st.write("### AI Data Analysis")
         if st.button("Generate AI Analysis"):
             try:
                 prompt = (
-                    "Analyze the following dataset with a focus on the global port performance and its impact on Pelindo Indonesia's competitiveness. "
-                    "Provide insights on trade flows, TEUs data, key challenges, and opportunities: \n"
+                    "Analisis dataset berikut dengan fokus pada kinerja pelabuhan dunia dan dampaknya terhadap daya saing Pelindo Indonesia. "
+                    "Berikan wawasan mendalam mengenai arus perdagangan, data TEUs, tantangan utama, dan peluang yang ada: \n"
                     + data.to_csv(index=False)
                 )
 
                 response = openai.ChatCompletion.create(
                     model="gpt-4",
-                    messages=[{"role": "system", "content": "You are an expert data analyst specializing in port and logistics performance."},
+                    messages=[{"role": "system", "content": "Anda adalah seorang analis data ahli dalam performa pelabuhan dan logistik."},
                               {"role": "user", "content": prompt}]
                 )
-                st.write("#### AI Analysis Result:")
+                st.write("#### Hasil Analisis AI:")
                 st.write(response['choices'][0]['message']['content'])
 
             except Exception as e:
@@ -183,3 +183,4 @@ if uploaded_file is not None:
 
 else:
     st.info("Please upload a file to proceed.")
+
