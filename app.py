@@ -13,7 +13,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Streamlit App
-st.title(" Pelindo AI Business Analytics")
+st.title("Pelindo AI Business Analytics")
 
 # File upload
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
@@ -26,16 +26,18 @@ if uploaded_file is not None:
         elif uploaded_file.name.endswith(".xlsx"):
             data = pd.read_excel(uploaded_file)
 
-        # Search Engine Feature
-        st.write("### Search Port or Country")
-        search_query = st.text_input("Search for a port or country:")
-        if search_query:
-            filtered_data = data[data.apply(lambda row: search_query.lower() in str(row).lower(), axis=1)]
-            st.write("#### Search Results:")
-            st.dataframe(filtered_data)
+        # Ensure TEU column is numeric
+        if 'MillionTEU2023' in data.columns:
+            data['MillionTEU2023'] = pd.to_numeric(data['MillionTEU2023'], errors='coerce')
+        else:
+            st.error("No column named 'MillionTEU2023' found in dataset.")
 
-        # Geomap Visualisation
-        st.write("### Geomap Visualisation")
+        # Display raw table
+        st.write("### Uploaded Data Table")
+        st.dataframe(data)
+
+        # Geomap Visualization
+        st.write("### Geomap Visualization")
         if "latitude" in data.columns and "longitude" in data.columns:
             map_center = [data["latitude"].mean(), data["longitude"].mean()]
             m = folium.Map(location=map_center, zoom_start=2)
@@ -50,65 +52,26 @@ if uploaded_file is not None:
             st.write("#### Geomap")
             st_folium(m, width=800, height=500)
         else:
-            st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualisation.")
+            st.info("No 'latitude' and 'longitude' columns found in the dataset for geomap visualization.")
 
-        # Interactive Visualisation with Plotly
-        st.write("### Interactive Visualisation")
-        columns = data.columns.tolist()
-        x_axis = st.selectbox("Select X-axis", columns)
-        y_axis = st.selectbox("Select Y-axis", columns)
-        chart_type = st.selectbox(
-            "Select Chart Type", 
-            ["Line Chart", "Bar Chart", "Scatter Plot", "Histogram"]
-        )
-
-        if st.button("Generate Interactive Plot"):
-            if chart_type == "Line Chart":
-                fig = px.line(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
-            elif chart_type == "Bar Chart":
-                fig = px.bar(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
-            elif chart_type == "Scatter Plot":
-                fig = px.scatter(data, x=x_axis, y=y_axis, title=f"{y_axis} vs {x_axis}")
-            elif chart_type == "Histogram":
-                fig = px.histogram(data, x=x_axis, title=f"Histogram of {x_axis}")
-
+        # Interactive Visualization
+        st.write("### TEU Bar Chart")
+        if "Port Name" in data.columns and "MillionTEU2023" in data.columns:
+            fig = px.bar(data, x="Port Name", y="MillionTEU2023", title="TEU Volume by Port Name")
             st.plotly_chart(fig)
+        else:
+            st.error("Required columns 'Port Name' or 'MillionTEU2023' not found in the dataset.")
 
-        # AI Analysis Options
-        st.write("### AI Data Analysis")
-        analysis_type = st.radio("Pilih jenis analisis:", ["Analisis Berdasarkan Data dari Pelindo", "Pencarian Detail dengan Pelindo AI"])
-        analysis_query = st.text_area("Deskripsi analisis atau detail pencarian:")
-        if st.button("Generate AI Analysis") and analysis_query:
-            try:
-                if analysis_type == "Analisis Berdasarkan Data":
-                    prompt = (
-                        f"Berdasarkan dataset berikut, lakukan analisis mendalam tentang '{analysis_query}'. Fokuskan analisis pada kinerja pelabuhan, tren TEUs, dan peluang untuk Pelindo Indonesia:\n"
-                        + data.to_csv(index=False)
-                    )
-                else:
-                    prompt = (
-                        f"Cari informasi lengkap tentang '{analysis_query}' yang relevan dengan performa pelabuhan dunia. Tambahkan referensi sumber terpercaya."
-                    )
-
-                response = openai.ChatCompletion.create(
-                    model="gpt-4o",
-                    temperature=1,
-                    max_completion_tokens=2048,
-                    messages=[{"role": "system", "content": "Anda adalah analis data berpengalaman."},
-                              {"role": "user", "content": prompt}]
-                )
-                result = response['choices'][0]['message']['content']
-                st.write("#### Hasil Analisis AI:")
-                st.write(result)
-
-            except Exception as e:
-                st.error(f"Error generating analysis: {e}")
+        # Search Engine Feature
+        st.write("### Search Port or Country")
+        search_query = st.text_input("Search for a port or country:")
+        if search_query:
+            filtered_data = data[data.apply(lambda row: search_query.lower() in str(row).lower(), axis=1)]
+            st.write("#### Search Results:")
+            st.dataframe(filtered_data)
 
     except Exception as e:
         st.error(f"Error loading file: {e}")
-
 else:
     st.info("Please upload a file to proceed.")
-
-
 
