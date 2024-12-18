@@ -13,7 +13,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Streamlit App
-st.title("Pelindo AI Business Analytics")
+st.title("Pelindo AI Worldwide Port Analysis")
 
 # File upload
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
@@ -71,11 +71,11 @@ if uploaded_file is not None:
             st.dataframe(filtered_data)
 
         # GPT-4o Integration for Analysis
-        st.subheader("Analisis Data dengan GPT-4o")
+        st.subheader("Analisis Data dengan Pelindo AI")
         analysis_query = st.text_area("Deskripsi analisis atau detail pencarian:")
-        analysis_type = st.radio("Pilih Jenis Analisis GPT-4o:", ["Analisis Berdasarkan Data", "Pencarian Global GPT-4o"])
+        analysis_type = st.radio("Pilih Jenis Analisis Pelindo AI:", ["Analisis Berdasarkan Data", "Pencarian Global Pelindo AI"])
 
-        if st.button("Generate AI Analysis") and analysis_query:
+        if st.button("Generate Pelindo AI") and analysis_query:
             try:
                 if analysis_type == "Analisis Berdasarkan Data":
                     # Analisis berdasarkan data
@@ -105,7 +105,7 @@ if uploaded_file is not None:
                         temperature=1.0
                     )
                     result_search = response_search['choices'][0]['message']['content']
-                    st.write("#### Hasil Pencarian Global GPT-4o:")
+                    st.write("#### Hasil Pencarian Global Pelindo AI:")
                     st.write(result_search)
             except Exception as e:
                 st.error(f"Error generating analysis: {e}")
